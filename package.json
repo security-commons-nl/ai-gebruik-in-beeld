@@ -1,0 +1,14 @@
+{
+  "name": "handelingsperspectief-site",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "description": "Static site build for the Handelingsperspectief documentation",
+  "license": "EUPL-1.2",
+  "scripts": {
+    "build": "node site/build.mjs"
+  },
+  "dependencies": {
+    "marked": "18.0.5"
+  }
+}

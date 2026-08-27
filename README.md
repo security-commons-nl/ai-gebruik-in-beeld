@@ -4,6 +4,8 @@
 bewijst, en hoe je de meting auditbaar vastlegt.** Voor de CISO en de functionaris
 gegevensbescherming samen.
 
+> **Lees het draaiboek online:** [security-commons-nl.github.io/ai-gebruik-in-beeld](https://security-commons-nl.github.io/ai-gebruik-in-beeld/)
+
 Bijna elke publieke organisatie stelt nu AI-beleid vast, en vrijwel geen enkele weet op dat moment
 wat er feitelijk gebeurt. Beleid zonder feitenbeeld is een aanname. Dit draaiboek sluit dat gat:
 niet "hebben we AI-beleid?" maar "wat draait er, langs welke route, en kunnen we dat aantonen?"
