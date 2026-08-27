@@ -1,0 +1,29 @@
+// ai-diensten-netwerk.kql
+// Doel: het basisbeeld. Per AI-dienst het aantal apparaten en verbindingen over een vast venster.
+// Vereist: Advanced Hunting (DeviceNetworkEvents).
+// Beperking: verbindingen zijn geen gebruikers en zeggen niets over de inhoud. Apparaataantal is de
+//   bruikbare breedtemaat; verbindingen hooguit een indicatie van intensiteit.
+// Aanpassen: de hostlijst en de indeling in de case(). Houd de lijst bij als eigen artefact, het aanbod
+//   verandert per kwartaal. De ingebedde assistent van je eigen platform hoort apart geteld te worden
+//   (zie ai-ingebedde-assistent-schoon.kql), niet als shadow-AI.
+
+DeviceNetworkEvents
+| where Timestamp > ago(30d)
+| where RemoteUrl has_any ("openai.com", "chatgpt.com", "claude.ai", "anthropic.com",
+                           "gemini.google.com", "copilot.microsoft.com", "perplexity.ai",
+                           "poe.com", "mistral.ai", "deepseek.com", "x.ai", "grok", "huggingface.co")
+| extend Tool = case(
+    RemoteUrl has_any ("chatgpt.com", "openai.com"), "ChatGPT/OpenAI",
+    RemoteUrl has_any ("claude.ai", "anthropic.com"), "Claude/Anthropic",
+    RemoteUrl has "perplexity.ai", "Perplexity",
+    RemoteUrl has "gemini.google.com", "Gemini",
+    RemoteUrl has "copilot.microsoft.com", "Copilot (platform-default)",
+    RemoteUrl has "mistral.ai", "Mistral",
+    RemoteUrl has_any ("x.ai", "grok"), "Grok/xAI",
+    RemoteUrl has "huggingface.co", "HuggingFace",
+    RemoteUrl has "deepseek.com", "DeepSeek",
+    "Overig")
+| summarize Verbindingen = count(), Apparaten = dcount(DeviceId),
+            Eerste = min(Timestamp), Laatste = max(Timestamp)
+    by Tool
+| sort by Apparaten desc

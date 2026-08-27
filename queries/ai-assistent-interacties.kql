@@ -1,0 +1,20 @@
+// ai-assistent-interacties.kql
+// Doel: echte interacties met de ingebedde assistent, dienstzijdig gemeten in plaats van via
+//   netwerkverbindingen. Dit is het getal dat je in een rapportage wilt hebben.
+// Vereist: cloud-app-telemetrie in Advanced Hunting (CloudAppEvents).
+// Beperking: de applicatienaam verschilt per tenant en per productversie; controleer eerst met probe 2 uit
+//   ai-probe-bronnen.kql welke namen in jouw omgeving voorkomen en pas de filterregel aan.
+// Lezing: leg het gebruikersaantal hiernaast het aantal betaalde licenties uit het beheerportaal. Is het
+//   gebruikersaantal veel groter, dan gebruikt men de gratis gebundelde variant. Dat verandert de
+//   contractvraag en meestal ook de dataverwerkingsvraag.
+
+CloudAppEvents
+| where Timestamp > ago(30d)
+| where Application has "Copilot"
+| summarize Interacties = count(),
+            Gebruikers = dcount(AccountId),
+            Dagen_actief = dcount(bin(Timestamp, 1d)),
+            Eerste = min(Timestamp),
+            Laatste = max(Timestamp)
+    by Application
+| sort by Interacties desc

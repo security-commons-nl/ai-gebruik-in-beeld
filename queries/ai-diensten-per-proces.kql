@@ -1,0 +1,22 @@
+// ai-diensten-per-proces.kql
+// Doel: via welke software het AI-verkeer loopt: browser, geinstalleerde desktop-app, uitwijkbrowser,
+//   CLI- en ontwikkeltooling, kantoorsoftware of systeemproces.
+// Vereist: Advanced Hunting (DeviceNetworkEvents).
+// Beperking: het startende proces zegt iets over de route, niet over de gebruiker of de inhoud.
+// Lezing: systeemprocessen in deze uitkomst zijn ingebedde AI en geen gebruikersgedrag. Een desktop-app of
+//   CLI-tool duidt op bewuste installatie; een uitwijkbrowser duidt op omzeiling van de beheerde browser.
+
+DeviceNetworkEvents
+| where Timestamp > ago(30d)
+| where RemoteUrl has_any ("openai.com", "chatgpt.com", "claude.ai", "anthropic.com",
+                           "gemini.google.com", "copilot.microsoft.com", "perplexity.ai",
+                           "poe.com", "mistral.ai", "deepseek.com", "x.ai", "grok")
+| extend Tool = case(
+    RemoteUrl has_any ("chatgpt.com", "openai.com"), "ChatGPT/OpenAI",
+    RemoteUrl has_any ("claude.ai", "anthropic.com"), "Claude/Anthropic",
+    RemoteUrl has "perplexity.ai", "Perplexity",
+    RemoteUrl has "gemini.google.com", "Gemini",
+    RemoteUrl has "copilot.microsoft.com", "Copilot (platform-default)",
+    "Overig")
+| summarize Verbindingen = count(), Apparaten = dcount(DeviceId) by Tool, InitiatingProcessFileName
+| sort by Apparaten desc

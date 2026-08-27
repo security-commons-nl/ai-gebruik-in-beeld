@@ -1,0 +1,18 @@
+// ai-mailtoegang-apps.kql
+// Doel: vaststellen of er een AI-assistent in postvakken meeleest, door postvaktoegang te groeperen per
+//   applicatie-identiteit in plaats van per gebruiker.
+// Vereist: cloud-app-telemetrie in Advanced Hunting (CloudAppEvents met MailItemsAccessed).
+// Beperking: dit toont welke applicaties postvakken benaderen, niet wat er is gelezen. De filter op REST
+//   beperkt de uitkomst tot programmatische toegang; dat is precies waar een assistent zou zitten.
+// Vervolgstap: leg de gevonden applicatie-identiteiten naast de toegestane applicaties in je
+//   identiteitsbeheer. Onbekende identiteiten zijn een onderzoeksvraag, geen bevinding: controleer ze in de
+//   eigen tenant en niet via een zoekmachine, want productnamen lijken op elkaar.
+
+CloudAppEvents
+| where Timestamp > ago(30d)
+| where ActionType == "MailItemsAccessed"
+| extend ClientInfo = tostring(RawEventData.ClientInfoString), AppId = tostring(RawEventData.AppId)
+| where ClientInfo has "REST"
+| summarize Postvakken = dcount(AccountObjectId), Events = count(), Laatste = max(Timestamp)
+    by AppId, ClientInfo
+| sort by Postvakken desc

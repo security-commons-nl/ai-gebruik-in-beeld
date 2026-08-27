@@ -1,0 +1,18 @@
+// ai-contentverkeer.kql
+// Doel: onderscheid tussen "iemand stelde een vraag" en "er ging een bestand heen", door te tellen op de
+//   aparte bestands- en uploadhosts van AI-aanbieders.
+// Vereist: Advanced Hunting (DeviceNetworkEvents).
+// Beperking: dit toont dat er bestandsverkeer plaatsvindt, niet welke bestanden of welke gegevens. Gebruik
+//   het als signaal voor het gesprek over classificatie, nooit als bewijs van een datalek.
+// Aanpassen: aanbieders verplaatsen hun bestandsopslag naar andere subdomeinen; controleer de lijst per ronde.
+
+let ContentHosts = dynamic(["oaiusercontent.com", "files.oaiusercontent.com", "cdn.openai.com",
+                            "files.anthropic.com"]);
+DeviceNetworkEvents
+| where Timestamp > ago(30d)
+| where RemoteUrl has_any (ContentHosts)
+| summarize Verbindingen = count(), Apparaten = dcount(DeviceId), Laatste = max(Timestamp)
+
+// Vergelijk deze uitkomst met het apparaataantal van dezelfde dienst uit ai-diensten-netwerk.kql.
+// Liggen ze in dezelfde orde van grootte, dan is uploaden gangbaar gedrag en niet de uitzondering
+// waar beleid vaak van uitgaat.

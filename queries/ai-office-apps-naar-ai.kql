@@ -1,0 +1,25 @@
+// ai-office-apps-naar-ai.kql
+// Doel: kantoorapplicaties die zelf AI-diensten aanroepen, als indicatie van add-ins.
+// Vereist: Advanced Hunting (DeviceNetworkEvents).
+// Beperking, en dit is de belangrijkste van dit hoofdstuk: verkeer vanuit de mailclient is grotendeels
+//   trackingpixels uit nieuwsbrieven en marketingmail, niet een AI-add-in. Tel de mailclient dus nooit mee
+//   zonder controle. De harde kern zit meestal bij de tekstverwerker en de presentatiesoftware, en is klein.
+// Vervolgstap: draai de tweede variant hieronder om het bovenliggende proces te zien. Een webview-component
+//   als ouder duidt op een add-in binnen de applicatie; de applicatie zelf als ouder duidt op de gebruiker.
+
+DeviceNetworkEvents
+| where Timestamp > ago(30d)
+| where InitiatingProcessFileName in~ ("outlook.exe", "winword.exe", "excel.exe", "powerpnt.exe", "onenote.exe")
+| where RemoteUrl has_any ("openai.com", "chatgpt.com", "oaiusercontent.com", "anthropic.com", "claude.ai",
+                           "perplexity.ai", "mistral.ai", "x.ai", "deepseek.com")
+| summarize Verbindingen = count(), Apparaten = dcount(DeviceId) by InitiatingProcessFileName, RemoteUrl
+| sort by Apparaten desc, Verbindingen desc
+
+// Variant met het bovenliggende proces erbij:
+// DeviceNetworkEvents
+// | where Timestamp > ago(30d)
+// | where RemoteUrl has_any ("chatgpt.com", "openai.com")
+// | where InitiatingProcessFileName in~ ("winword.exe", "powerpnt.exe", "excel.exe", "outlook.exe", "msedgewebview2.exe")
+// | summarize Verbindingen = count(), Apparaten = dcount(DeviceId)
+//     by InitiatingProcessFileName, InitiatingProcessParentFileName
+// | sort by Apparaten desc

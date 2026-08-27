@@ -1,0 +1,25 @@
+// ai-volledigheidssweep.kql
+// Doel: toetsen of je eigen hostlijst niets van betekenis heeft gemist, door breed te zoeken over circa
+//   zestig AI-diensten en het resultaat per host te tonen.
+// Vereist: Advanced Hunting (DeviceNetworkEvents).
+// Beperking: dit is een controlemiddel, geen meting. Zonder deze stap is "wij vonden geen andere diensten"
+//   een uitspraak over je eigen zoeklijst en niet over je omgeving.
+// Vervolgstap: alles wat hier bovenkomt en niet in je kernlijst staat, trieer je met de hand voordat het in
+//   een rapportage belandt. Vul daarna je kernlijst aan en noteer die wijziging, anders zijn je twee
+//   meetrondes niet vergelijkbaar.
+
+let aiDomains = dynamic([
+  "chatgpt.com","openai.com","oaiusercontent.com","claude.ai","anthropic.com","gemini.google.com","aistudio.google.com",
+  "copilot.microsoft.com","perplexity.ai","poe.com","huggingface.co","mistral.ai","x.ai","grok.com","deepseek.com",
+  "character.ai","pi.ai","you.com","phind.com","kagi.com","jasper.ai","copy.ai","writesonic.com","quillbot.com","notion.ai",
+  "midjourney.com","leonardo.ai","stability.ai","runwayml.com","elevenlabs.io","heygen.com","synthesia.io","suno.com","udio.com","pika.art",
+  "githubcopilot.com","cursor.com","codeium.com","tabnine.com","replit.com","bolt.new","v0.dev","lovable.dev",
+  "otter.ai","fireflies.ai","fathom.video","tldv.io","read.ai","notta.ai","chatpdf.com","humata.ai","sider.ai","monica.im",
+  "getmerlin.in","deepl.com","gamma.app","tome.app"
+]);
+DeviceNetworkEvents
+| where Timestamp > ago(30d)
+| where RemoteUrl has_any (aiDomains)
+| extend Host = tolower(extract("^(?:https?://)?([^/:]+)", 1, RemoteUrl))
+| summarize Apparaten = dcount(DeviceId), Verbindingen = count(), Laatste = max(Timestamp) by Host
+| sort by Apparaten desc

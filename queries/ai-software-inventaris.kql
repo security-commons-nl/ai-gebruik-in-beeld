@@ -1,0 +1,14 @@
+// ai-software-inventaris.kql
+// Doel: welke AI-software staat geinstalleerd, ongeacht of hij deze maand verkeer genereerde. Andere bron
+//   dan netwerk- en procesgebeurtenissen, en daarmee een onafhankelijke controle op het beeld.
+// Vereist: Advanced Hunting met kwetsbaarhedenbeheer (DeviceTvmSoftwareInventory).
+// Beperking: geinstalleerd is niet gebruikt, en de inventaris kent alleen software die als product wordt
+//   herkend. Losse uitvoerbare bestanden en portable tooling staan er niet in.
+// Aanpassen: de zoektermen. Voeg toe wat in jouw omgeving speelt, en houd er rekening mee dat brede termen
+//   ("notion", "copilot") ook niet-AI-producten raken; controleer de uitkomst op naam en uitgever.
+
+DeviceTvmSoftwareInventory
+| where SoftwareName has_any ("claude", "copilot", "cursor", "ollama", "lm studio", "lmstudio",
+                              "perplexity", "comet", "deepl", "whisper", "codex", "chatgpt")
+| summarize Apparaten = dcount(DeviceId) by SoftwareVendor, SoftwareName
+| sort by Apparaten desc

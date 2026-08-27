@@ -1,0 +1,16 @@
+// ai-directe-api.kql
+// Doel: programmatisch AI-gebruik onderscheiden van gebruik via de website: aanroepen naar API-endpoints,
+//   per endpoint en per startend proces.
+// Vereist: Advanced Hunting (DeviceNetworkEvents).
+// Beperking: dit toont dat er een integratie is, niet wat die integratie doet of met welke data.
+// Lezing: API-verkeer is smal en diep (weinig apparaten, veel volume, vaak ontwikkel- of beheertooling),
+//   webverkeer is breed en ondiep. Die twee vragen om verschillende maatregelen: het eerste om afspraken
+//   met de bouwer, het tweede om een voorziening en voorlichting.
+
+DeviceNetworkEvents
+| where Timestamp > ago(30d)
+| where RemoteUrl has_any ("api.openai.com", "api.anthropic.com", "api.perplexity.ai",
+                           "api.mistral.ai", "api.x.ai", "api.deepseek.com")
+| summarize Verbindingen = count(), Apparaten = dcount(DeviceId)
+    by RemoteUrl, InitiatingProcessFileName
+| sort by Apparaten desc

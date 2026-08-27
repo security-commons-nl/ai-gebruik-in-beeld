@@ -1,0 +1,44 @@
+// ai-organisatie-splitsing.kql
+// Doel: AI-gebruik splitsen per organisatie in een gedeelde tenant (gemeenschappelijke regeling, shared
+//   service center, ambtelijke fusie), zonder individuele accounts in het resultaat.
+// Vereist: Advanced Hunting (DeviceNetworkEvents) en een gevulde UPN-kolom; toets dat eerst met probe 3
+//   uit ai-probe-bronnen.kql.
+// Beperking: de organisatiekaart wijst elk apparaat toe aan de organisatie waarvan het meeste verkeer komt.
+//   Gedeelde apparaten worden dus toegewezen aan hun dominante gebruiker. Dat is bruikbaar voor
+//   verhoudingen, niet voor exacte aantallen per organisatie.
+// De aggregatiegrens: het domeindeel achter de @ komt in het resultaat, losse adressen niet.
+
+let OrgMap =
+    DeviceNetworkEvents
+    | where Timestamp > ago(30d)
+    | extend Org = tolower(tostring(split(InitiatingProcessAccountUpn, "@")[1]))
+    | where isnotempty(Org)
+    | summarize Events = count() by DeviceId, Org
+    | summarize arg_max(Events, Org) by DeviceId
+    | project DeviceId, Org;
+DeviceNetworkEvents
+| where Timestamp > ago(30d)
+| where RemoteUrl has_any ("openai.com", "chatgpt.com", "claude.ai", "anthropic.com",
+                           "gemini.google.com", "copilot.microsoft.com", "perplexity.ai",
+                           "poe.com", "mistral.ai", "deepseek.com", "x.ai", "grok", "huggingface.co")
+| extend Tool = case(
+    RemoteUrl has_any ("chatgpt.com", "openai.com"), "ChatGPT/OpenAI",
+    RemoteUrl has_any ("claude.ai", "anthropic.com"), "Claude/Anthropic",
+    RemoteUrl has "perplexity.ai", "Perplexity",
+    RemoteUrl has "gemini.google.com", "Gemini",
+    RemoteUrl has "copilot.microsoft.com", "Copilot (platform-default)",
+    RemoteUrl has "mistral.ai", "Mistral",
+    RemoteUrl has_any ("x.ai", "grok"), "Grok/xAI",
+    RemoteUrl has "huggingface.co", "HuggingFace",
+    RemoteUrl has "deepseek.com", "DeepSeek",
+    "Overig")
+| join kind=inner OrgMap on DeviceId
+| summarize Verbindingen = count(), Apparaten = dcount(DeviceId) by Org, Tool
+| sort by Org asc, Apparaten desc
+
+// De noemer per organisatie (draai apart, zelfde OrgMap):
+// OrgMap | summarize Apparaten = dcount(DeviceId) by Org | sort by Apparaten desc
+//
+// Hoort een organisatie meerdere e-maildomeinen te omvatten (verbonden partijen, museum, sociale dienst),
+// stel die lijst dan vooraf vast en leg de keuze vast in de run-log. Achteraf domeinen toevoegen maakt
+// twee meetrondes onvergelijkbaar.

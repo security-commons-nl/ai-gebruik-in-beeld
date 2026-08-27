@@ -1,0 +1,17 @@
+// ai-noemer-apparaten.kql
+// Doel: de noemer vaststellen: hoeveel apparaten zie je eigenlijk, uitgesplitst naar platform en
+//   onboardingstatus. Zonder noemer is elk absoluut getal in een rapportage stuurloos.
+// Vereist: Advanced Hunting (DeviceInfo).
+// Beperking: dit is de beheerde vloot. Onbeheerde apparaten leveren geen telemetrie en vallen dus buiten
+//   elke meting in dit hoofdstuk; benoem die populatiegrens expliciet in de rapportage.
+// Let op: zorg dat teller en noemer over dezelfde populatie gaan. Het aantal actieve accounts uit het
+//   beheerportaal is een andere noemer dan het aantal apparaten hier.
+
+DeviceInfo
+| where Timestamp > ago(30d)
+| summarize arg_max(Timestamp, OnboardingStatus, DeviceType, OSPlatform) by DeviceId
+| summarize Apparaten = dcount(DeviceId) by OnboardingStatus, DeviceType, OSPlatform
+| sort by Apparaten desc
+
+// Totaal in een getal:
+// DeviceInfo | where Timestamp > ago(30d) | summarize Apparaten = dcount(DeviceId)

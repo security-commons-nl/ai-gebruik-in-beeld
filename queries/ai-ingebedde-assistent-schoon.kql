@@ -1,0 +1,20 @@
+// ai-ingebedde-assistent-schoon.kql
+// Doel: de ingebedde assistent van je eigen platform apart tellen, met de systeemruis eruit. Zonder deze
+//   schoonmaak rapporteer je een AI-adoptie die niemand heeft uitgevoerd.
+// Vereist: Advanced Hunting (DeviceNetworkEvents).
+// Beperking: ook na filtering telt dit verbindingen, niet interacties. Voor echte interacties is de
+//   dienstzijdige bron nodig (zie ai-assistent-interacties.kql); die twee getallen verschillen fors.
+// Aanpassen: de uitsluitingslijst. Achtergrondprocessen, brokers en webview-componenten van het platform
+//   praten uit zichzelf met de assistentdienst en horen niet in een gebruikscijfer.
+
+DeviceNetworkEvents
+| where Timestamp > ago(30d)
+| where RemoteUrl has "copilot.microsoft.com"
+| where InitiatingProcessFileName !in~ (
+    "backgroundtaskhost.exe", "lsass.exe", "svchost.exe",
+    "microsoft.aad.brokerplugin.exe", "onedrive.exe", "msedgewebview2.exe")
+| summarize Verbindingen = count(), Apparaten = dcount(DeviceId) by InitiatingProcessFileName
+| sort by Apparaten desc
+
+// Schoon totaal in een getal (zelfde filter, zonder uitsplitsing):
+// ... | summarize Verbindingen = count(), Apparaten = dcount(DeviceId)

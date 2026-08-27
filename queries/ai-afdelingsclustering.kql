@@ -1,0 +1,40 @@
+// ai-afdelingsclustering.kql
+// Doel: adoptie en uploadaandeel per organisatieonderdeel, met een ondergrens die herleidbaarheid naar
+//   personen voorkomt.
+// Vereist: Advanced Hunting (DeviceNetworkEvents, IdentityInfo) en een gevuld afdelingsattribuut; toets dat
+//   eerst met probe 4 uit ai-probe-bronnen.kql.
+// Beperking, en die is wezenlijk: deze query rekent per account en aggregeert daarna. Tussen die twee
+//   stappen bestaat er een resultaat op persoonsniveau. Dat is een grens waar de FG vooraf iets van moet
+//   vinden; draai hem niet zonder die afspraak, en exporteer alleen het geaggregeerde eindresultaat.
+// De ondergrens: onderdelen met minder dan tien accounts worden samengevoegd tot een restcluster. Verhoog
+//   die drempel als je organisatie kleine teams kent.
+
+let AIDomains = dynamic(["openai.com", "chatgpt.com", "claude.ai", "anthropic.com", "gemini.google.com",
+                         "perplexity.ai", "mistral.ai", "deepseek.com", "x.ai", "huggingface.co"]);
+let EigenDomeinen = dynamic(["organisatie-a.nl", "organisatie-b.nl"]);   // vul je eigen domeinen in
+let PerAccount =
+    DeviceNetworkEvents
+    | where Timestamp > ago(30d)
+    | extend Upn = tolower(InitiatingProcessAccountUpn)
+    | where isnotempty(Upn)
+    | where tostring(split(Upn, "@")[1]) in (EigenDomeinen)
+    | summarize ApparatenAI = dcountif(DeviceId, RemoteUrl has_any (AIDomains)),
+                Upload      = dcountif(DeviceId, RemoteUrl has "oaiusercontent.com")
+      by Upn;
+let Afdelingen =
+    IdentityInfo
+    | where isnotempty(AccountUpn)
+    | summarize Department = max(Department) by Upn = tolower(AccountUpn);
+PerAccount
+| join kind=leftouter Afdelingen on Upn
+| extend Afdeling = iff(isempty(Department), "onbekend", Department)
+| summarize Accounts = count(),
+            AccountsAI = countif(ApparatenAI > 0),
+            AccountsUpload = countif(Upload > 0)
+    by Afdeling
+| extend Cluster = iff(Accounts >= 10, Afdeling, "Overig (clusters onder 10)")
+| summarize Accounts = sum(Accounts), AccountsAI = sum(AccountsAI), AccountsUpload = sum(AccountsUpload)
+    by Cluster
+| extend AdoptiePct = round(100.0 * AccountsAI / Accounts, 1),
+         UploadaandeelPct = round(100.0 * AccountsUpload / Accounts, 1)
+| sort by AdoptiePct desc

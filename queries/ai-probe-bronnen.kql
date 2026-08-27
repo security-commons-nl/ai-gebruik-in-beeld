@@ -1,0 +1,42 @@
+// ai-probe-bronnen.kql
+// Doel: vier probes van een minuut die vaststellen welk deel van het onderzoek in jouw omgeving haalbaar is.
+// Vereist: Advanced Hunting. Draai ze vanaf het account waarmee je het onderzoek gaat doen.
+// Beperking: dit meet niets, het toetst je bronnen. Een lege of ontbrekende bron is zelf een bevinding en
+//   hoort als zodanig in de run-log, niet als "geen AI aangetroffen".
+// Draai de blokken los van elkaar; ze staan hier bij elkaar omdat ze samen een kwartier kosten.
+
+// --- 1. Is er uberhaupt AI-verkeer zichtbaar, en lost de tabel op vanaf dit account? -------------------
+DeviceNetworkEvents
+| where Timestamp > ago(1d)
+| where RemoteUrl has_any ("openai.com", "chatgpt.com", "claude.ai", "anthropic.com",
+                           "gemini.google.com", "copilot.microsoft.com", "perplexity.ai")
+| summarize Verbindingen = count(), Apparaten = dcount(DeviceId)
+
+// --- 2. Bestaat de cloud-app-tabel, en wat zit erin? ---------------------------------------------------
+// Lost deze niet op ("Failed to resolve table"), probeer dan het beheeraccount voordat je concludeert
+// dat de bron ontbreekt.
+CloudAppEvents
+| where Timestamp > ago(7d)
+| summarize Events = count() by Application
+| sort by Events desc
+
+// --- 3. Is de UPN-kolom gevuld? Bepaalt of splitsen per organisatie mogelijk is ------------------------
+DeviceNetworkEvents
+| where Timestamp > ago(1d)
+| summarize Totaal = count(), MetUpn = countif(isnotempty(InitiatingProcessAccountUpn))
+| extend VulgraadPct = round(100.0 * MetUpn / Totaal, 1)
+
+// --- 4. Bestaat het afdelingsattribuut, en is het gevuld? Bepaalt of clustering mogelijk is ------------
+IdentityInfo
+| where isnotempty(AccountUpn)
+| extend Org = tolower(tostring(split(AccountUpn, "@")[1]))
+| where Org == "eigen-domein.nl"   // vul je eigen e-maildomein in
+| summarize Accounts = count(), MetAfdeling = countif(isnotempty(Department))
+| extend VulgraadPct = round(100.0 * MetAfdeling / Accounts, 1)
+
+// --- 5. Bestaat endpoint-DLP? Bepaalt of de datalaag uberhaupt iets kan opleveren ---------------------
+DeviceEvents
+| where Timestamp > ago(7d)
+| summarize Events = count() by ActionType
+| sort by Events desc
+| take 100

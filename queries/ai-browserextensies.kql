@@ -1,0 +1,17 @@
+// ai-browserextensies.kql
+// Doel: browserextensies in beeld brengen als de extensie-inventaris in het portaal leeg blijft, door
+//   extensie-ID's af te leiden uit bestandssporen op de werkplek.
+// Vereist: Advanced Hunting (DeviceFileEvents).
+// Beperking: dit levert ID's, geen namen en geen gedrag. Een lege inventaris in het portaal is trouwens
+//   vaak geen rechtenprobleem maar een licentiegat; check dat eerst, die route is korter.
+// Vervolgstap: zoek elk ID op in een openbare extensiecatalogus, noteer naam, uitgever en gevraagde rechten,
+//   en leg die lookup vast als aparte stap in de run-log. Een AI-extensie die meeleest ziet alles wat de
+//   gebruiker ziet, dus de gevraagde rechten zijn hier belangrijker dan de naam.
+
+DeviceFileEvents
+| where Timestamp > ago(30d)
+| where FolderPath contains @"\Extensions\"
+| extend ExtId = extract(@"\\Extensions\\([a-p]{32})", 1, FolderPath)
+| where isnotempty(ExtId)
+| summarize Apparaten = dcount(DeviceId), Bestanden = count(), Laatste = max(Timestamp) by ExtId
+| sort by Apparaten desc
