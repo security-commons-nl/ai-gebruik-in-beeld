@@ -1,5 +1,9 @@
-// Build script: converts the Markdown chapters and KQL queries into a single
-// static index.html with tab navigation and visual components. Output: dist/.
+// Gedeeld build-script: gedeeld tussen Handelingsperspectief en ai-gebruik-in-beeld; wijzig beide.
+// Dit bestand bevat geen repo-specifieke gegevens. Alles wat per repo verschilt (titel,
+// beschrijving, repo-URL, hoofdstukken, query's) staat in site/config.json.
+//
+// Zet de Markdown-hoofdstukken en KQL-query's om in één statische index.html met
+// tabnavigatie en visuele componenten. Uitvoer: dist/.
 import { readFileSync, writeFileSync, mkdirSync } from 'node:fs';
 import { join, dirname } from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -11,32 +15,20 @@ import {
   calloutFromBlockquote, adviceFromParagraph, chapterHeading,
 } from './transforms.mjs';
 
-const ROOT = join(dirname(fileURLToPath(import.meta.url)), '..');
-const REPO_URL = 'https://github.com/security-commons-nl/ai-gebruik-in-beeld';
+const SITE_DIR = dirname(fileURLToPath(import.meta.url));
+const ROOT = join(SITE_DIR, '..');
 
-/** Tab manifest: source file, stable section id, short tab label, card title. */
-const TABS = [
-  { file: 'README.md', id: 'start', label: 'Start' },
-  { file: 'draaiboek.md', id: 'draaiboek', label: 'Draaiboek', title: 'AI-gebruik in beeld brengen' },
-];
-
-const QUERY_FILES = [
-  'ai-probe-bronnen.kql',
-  'ai-noemer-apparaten.kql',
-  'ai-diensten-netwerk.kql',
-  'ai-diensten-per-proces.kql',
-  'ai-contentverkeer.kql',
-  'ai-directe-api.kql',
-  'ai-software-inventaris.kql',
-  'ai-ingebedde-assistent-schoon.kql',
-  'ai-assistent-interacties.kql',
-  'ai-office-apps-naar-ai.kql',
-  'ai-browserextensies.kql',
-  'ai-mailtoegang-apps.kql',
-  'ai-organisatie-splitsing.kql',
-  'ai-afdelingsclustering.kql',
-  'ai-volledigheidssweep.kql',
-];
+/**
+ * Repo-specifieke configuratie uit site/config.json:
+ *   repoUrl     GitHub-URL van de repo (voor licentie- en bronlinks)
+ *   title       <title> van de pagina
+ *   description meta description
+ *   siteTitle   naam in de kopregel
+ *   tabs        tabmanifest: bronbestand, stabiel section-id, korte tablabel, kaarttitel
+ *   queryFiles  KQL-bestanden in queries/, in de volgorde van weergave
+ */
+const CONFIG = JSON.parse(readFileSync(join(SITE_DIR, 'config.json'), 'utf8'));
+const { repoUrl: REPO_URL, tabs: TABS, queryFiles: QUERY_FILES } = CONFIG;
 
 /** Slug -> {num, title, id} map used by the card transform. */
 const CHAPTER_META = new Map(
@@ -110,12 +102,17 @@ function renderBody(markdown) {
 
 /**
  * Rewrites relative repo links in rendered HTML to in-page tab anchors.
+ * Every source file from the tab manifest maps to its own tab; links into queries/ go to the
+ * queries tab; LICENSE goes to the repo.
  * @param {string} html Rendered chapter HTML.
  * @returns {string} HTML with rewritten hrefs.
  */
 function rewriteLinks(html) {
-  return html
-    .replace(/href="(\d{2}-[a-z0-9-]+)\.md"/g, 'href="#$1"')
+  let out = html;
+  for (const t of TABS) {
+    out = out.replaceAll(`href="${t.file}"`, `href="#${t.id}"`);
+  }
+  return out
     .replace(/href="queries\/[^"]*"/g, 'href="#queries"')
     .replace(/href="LICENSE"/g, `href="${REPO_URL}/blob/main/LICENSE"`);
 }
@@ -168,8 +165,8 @@ function buildQueriesSection() {
  */
 function buildPage() {
   const css = ['base.css', 'components.css']
-    .map((f) => readFileSync(join(ROOT, 'site', f), 'utf8')).join('\n');
-  const js = readFileSync(join(ROOT, 'site', 'page.js'), 'utf8');
+    .map((f) => readFileSync(join(SITE_DIR, f), 'utf8')).join('\n');
+  const js = readFileSync(join(SITE_DIR, 'page.js'), 'utf8');
   const allTabs = [...TABS, { id: 'queries', label: "Query's" }];
   const nav = allTabs
     .map((t) => `<button type="button" class="tab" data-target="${t.id}">${escapeHtml(t.label)}</button>`)
@@ -186,8 +183,8 @@ function buildPage() {
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>AI-gebruik in beeld brengen · Security Commons NL</title>
-<meta name="description" content="Evidence-based methode om als gemeente de security posture te verhogen, met ClickFix als casus.">
+<title>${escapeHtml(CONFIG.title)}</title>
+<meta name="description" content="${escapeHtml(CONFIG.description)}">
 <style>
 ${css}
 </style>
@@ -196,7 +193,7 @@ ${css}
 <header class="site-header">
   <div class="inner masthead">
     <span class="site-kicker">Security Commons NL</span>
-    <span class="site-title">AI-gebruik in beeld</span>
+    <span class="site-title">${escapeHtml(CONFIG.siteTitle)}</span>
   </div>
   <nav class="tabs inner" aria-label="Hoofdstukken">
 ${nav}

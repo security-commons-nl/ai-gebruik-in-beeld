@@ -1,0 +1,27 @@
+{
+  "repoUrl": "https://github.com/security-commons-nl/ai-gebruik-in-beeld",
+  "title": "AI-gebruik in beeld brengen · Security Commons NL",
+  "description": "Draaiboek om AI-gebruik in een publieke organisatie feitelijk te meten: welke bronnen er zijn, wat elke bron bewijst en hoe je de meting auditbaar vastlegt.",
+  "siteTitle": "AI-gebruik in beeld",
+  "tabs": [
+    { "file": "README.md", "id": "start", "label": "Start" },
+    { "file": "draaiboek.md", "id": "draaiboek", "label": "Draaiboek", "title": "AI-gebruik in beeld brengen" }
+  ],
+  "queryFiles": [
+    "ai-probe-bronnen.kql",
+    "ai-noemer-apparaten.kql",
+    "ai-diensten-netwerk.kql",
+    "ai-diensten-per-proces.kql",
+    "ai-contentverkeer.kql",
+    "ai-directe-api.kql",
+    "ai-software-inventaris.kql",
+    "ai-ingebedde-assistent-schoon.kql",
+    "ai-assistent-interacties.kql",
+    "ai-office-apps-naar-ai.kql",
+    "ai-browserextensies.kql",
+    "ai-mailtoegang-apps.kql",
+    "ai-organisatie-splitsing.kql",
+    "ai-afdelingsclustering.kql",
+    "ai-volledigheidssweep.kql"
+  ]
+}

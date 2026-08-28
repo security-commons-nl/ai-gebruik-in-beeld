@@ -22,26 +22,7 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
-  build:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v6
-      - uses: actions/setup-node@v6
-        with:
-          node-version: 24
-          cache: npm
-      - run: npm ci
-      - run: node site/build.mjs
-      - uses: actions/upload-pages-artifact@v5
-        with:
-          path: dist
-
-  deploy:
-    needs: build
-    runs-on: ubuntu-latest
-    environment:
-      name: github-pages
-      url: ${{ steps.deployment.outputs.page_url }}
-    steps:
-      - id: deployment
-        uses: actions/deploy-pages@v5
+  # Bouw en deploy via de herbruikbare workflow in security-commons-nl/.github.
+  # Wat er gebouwd wordt staat in site/config.json; de stappen zelf staan daar.
+  pages:
+    uses: security-commons-nl/.github/.github/workflows/pages-docs.yml@main
