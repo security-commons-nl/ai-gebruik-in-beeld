@@ -50,9 +50,9 @@ je de eerste query draait. Het draaiboek werkt dat uit.
 
 ## Herkomst
 Dit draaiboek is afgesplitst van
-[Handelingsperspectief](https://github.com/security-commons-nl/Handelingsperspectief), waar het als
+[Meten voordat je ingrijpt](https://security-commons-nl.github.io/kennisbank/security/meten-voordat-je-ingrijpt/), waar het als
 hoofdstuk begon maar uitgroeide tot een zelfstandig product met een eigen grondslag, bewijslast en
-query-set. Handelingsperspectief blijft over de ClickFix-aanvalsvorm en het verhogen van de security
+query-set. Dat stuk blijft over de ClickFix-aanvalsvorm en het verhogen van de security
 posture; dit gaat specifiek over zicht op AI-gebruik.
 
 Open source onder EUPL v1.2.
