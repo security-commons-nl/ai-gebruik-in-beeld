@@ -192,7 +192,7 @@ ${css}
 <body>
 <header class="site-header">
   <div class="inner masthead">
-    <span class="site-kicker">Security Commons NL</span>
+    <nav class="site-kicker" aria-label="Kruimelpad"><a href="https://security-commons-nl.github.io/">Security Commons NL</a> ›</nav>
     <span class="site-title">${escapeHtml(CONFIG.siteTitle)}</span>
   </div>
   <nav class="tabs inner" aria-label="Hoofdstukken">

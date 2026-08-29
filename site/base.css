@@ -164,3 +164,7 @@ footer {
   details { open: true; }
   pre { background: #f4f6f9; color: #1c1c1c; }
 }
+
+/* Kruimelpad in de masthead (statuut B10). */
+.site-kicker a{color:inherit;text-decoration:none}
+.site-kicker a:hover{text-decoration:underline}
