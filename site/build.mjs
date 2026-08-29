@@ -185,6 +185,8 @@ function buildPage() {
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>${escapeHtml(CONFIG.title)}</title>
 <meta name="description" content="${escapeHtml(CONFIG.description)}">
+<link rel="icon" href="/favicon.svg" type="image/svg+xml">
+<link rel="alternate icon" href="/favicon.ico" sizes="32x32">
 <style>
 ${css}
 </style>
