@@ -8,6 +8,7 @@ Status: in gebruik. Draait als leesbare site en is in gebruik.
 bewijst, en hoe je de meting auditbaar vastlegt.** Voor de CISO en de functionaris
 gegevensbescherming samen.
 
+<!-- site:hide -->
 > **Lees het draaiboek online:** [security-commons-nl.github.io/ai-gebruik-in-beeld](https://security-commons-nl.github.io/ai-gebruik-in-beeld/)
 
 Bijna elke publieke organisatie stelt nu AI-beleid vast, en vrijwel geen enkele weet op dat moment
@@ -24,7 +25,8 @@ CISO's, privacy officers en informatiemanagers bij publieke organisaties.
 
 ## Snel starten
 
-Lees het draaiboek op https://security-commons-nl.github.io/ai-gebruik-in-beeld/.
+Lees het [draaiboek](draaiboek.md). De [query's](queries/) staan er los naast, om aan te
+passen op je eigen omgeving.
 
 ## Bijdragen
 
