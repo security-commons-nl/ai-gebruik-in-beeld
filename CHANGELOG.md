@@ -4,8 +4,9 @@ Nieuwste bovenaan.
 
 ## [0.1.0] - 2026-08-27
 
-Eerste versie, afgesplitst van
-[Handelingsperspectief](https://github.com/security-commons-nl/Handelingsperspectief).
+Eerste versie, afgesplitst van de repo Handelingsperspectief. Die is inmiddels opgeheven; de rest van
+de inhoud staat als [Meten voordat je ingrijpt](https://security-commons-nl.github.io/kennisbank/security/meten-voordat-je-ingrijpt/)
+in de kennisbank.
 
 ### Toegevoegd
 - Het draaiboek "AI-gebruik in beeld brengen" als zelfstandig product: twee meetregimes (actief
