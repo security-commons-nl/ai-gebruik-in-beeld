@@ -2,6 +2,12 @@
 
 Nieuwste bovenaan.
 
+## [0.1.1] - 2026-10-15
+
+### Toegevoegd
+- README: blok *Wat anderen al hebben* met de VNG-kenniskaart over monitoring en beheer van AI en de
+  CPB-handreiking over het meten van de effectiviteit van algoritmische processen.
+
 ## [0.1.0] - 2026-08-27
 
 Eerste versie, afgesplitst van de repo Handelingsperspectief. Die is inmiddels opgeheven; de rest van

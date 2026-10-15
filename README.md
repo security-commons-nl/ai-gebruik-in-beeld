@@ -50,6 +50,13 @@ op individuele gebruikers en geen prestatiemeting. De FG is mede-eigenaar vooraf
 achteraf. Toets het eigen IT-reglement, de BIO 2.0 en een eventueel medezeggenschapstraject voordat
 je de eerste query draait. Het draaiboek werkt dat uit.
 
+## Wat anderen al hebben
+Dit draaiboek meet wat er draait. De stap daarna, of een toepassing doet wat ze moet doen, staat elders:
+- [Instrumenten en kaders voor implementatie, monitoring en beheer van AI en algoritmen](https://aigovernance.vng.nl/knowledge_card/Instrumenten-en-kaders-voor-monitoring-en-beheer-van-AI-en-algoritmen),
+  kenniskaart van het VNG AI Governancekader: onder meer het Algoritmekader, de ALTAI en het functioneringsgesprek voor AI.
+- [Scoren zonder doel te treffen? Het meten van de effectiviteit van algoritmische processen](https://storage.googleapis.com/aigovernance.appspot.com/assets/CPB-publicatie-Scoren-zonder-doel-te-treffen-07092026_0.pdf)
+  van het CPB, via dezelfde kenniskaart: hoe je meet of een algoritme het doel haalt, niet alleen dat het draait.
+
 ## Herkomst
 Dit draaiboek is afgesplitst van
 [Meten voordat je ingrijpt](https://security-commons-nl.github.io/kennisbank/security/meten-voordat-je-ingrijpt/), waar het als
